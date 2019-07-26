@@ -1,5 +1,5 @@
 from flask import Flask, request, redirect, render_template, session, flash
-from flask_sqlalchemy import SQLAlchemy
+from flask_sqlalchemy import SQLAlchemy 
 
 app = Flask(__name__)
 app.config['DEBUG'] = True
@@ -7,6 +7,7 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://blogz:password@localhos
 app.config['SQLALCHEMY_ECHO'] = True
 
 db = SQLAlchemy(app)
+app.secret_key = "howmuchwoodwouldawoodchuckchuck"
 
 class Blog(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -37,7 +38,7 @@ def require_login():
         return redirect('/login')
 
 
-@app.route('/', methods=['POST', 'GET'])
+@app.route('/')
 def index():
     users = User.query.all()
     return render_template('index.html', users=users, header='Blog Users')
@@ -50,7 +51,7 @@ def blog():
 
     if user_id:
         posts = Blog.query.filter_by(owner_id=user_id)
-        return render_template('user.html', posts=posts, header="User Posts")
+        return render_template('Singleuser.html', posts=posts, header="User Posts")
     if blog_id:
         post = Blog.query.get(blog_id)
         return render_template('entry.html', post=post)
@@ -60,9 +61,6 @@ def blog():
 @app.route('/newpost', methods=['POST', 'GET'])
 def new_post():
     owner = User.query.filter_by(username=session['username']).first()
-
-    if request.method == 'GET':
-        return render_template('newpost.html')
 
     if request.method == 'POST':
         blog_title = request.form['blog-title']
@@ -85,6 +83,7 @@ def new_post():
         blog_title=blog_title, blog_body=blog_body)
     
     return render_template('newpost.html', header='New Blog Entry')
+
 @app.route('/login', methods=['POST', 'GET'])
 def login():
     if request.method == 'POST':
@@ -97,7 +96,7 @@ def login():
             flash('Logged in')
             return redirect('/newpost')
         else:
-            flash('USer password is incorrect, or user does not exist', 'error')
+            flash('User password is incorrect, or user does not exist', 'error')
 
     return render_template('login.html', header='Login')
 
@@ -105,7 +104,7 @@ def login():
 def signup():
     if request.method == 'POST':
         username = request.form['username']
-        passwword = request.form['password']
+        password = request.form['password']
         verify = request.form['verify']
 
         existing_user = User.query.filter_by(username=username).first()
